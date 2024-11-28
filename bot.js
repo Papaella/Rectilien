@@ -60,8 +60,7 @@ client.on('messageCreate', async (message) => {
     // If the message was modified, delete the original and repost
     if (modifiedContent !== message.content) {
         try {
-            await message.delete(); // Delete the original message
-            await message.channel.send(`${message.author} said: ${modifiedContent}`); // Repost modified content
+            await message.channel.send(`${message.author} with discord integration: ${modifiedContent}`); // Repost modified content
         } catch (error) {
             console.error('Error modifying message:', error);
         }
