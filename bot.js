@@ -59,12 +59,19 @@ client.on('messageCreate', async (message) => {
 
     // If the message was modified, ask for confirmation before deleting and reposting
     if (modifiedContent !== message.content) {
+        let confirmationMessage;
         try {
-            const confirmationMessage = await message.channel.send(`${message.author}, do you want me to delete and repost your message with modified URLs? Reply with "yes" or "no".`);
+            confirmationMessage = await message.channel.send(`${message.author}, do you want me to delete and repost your message with modified URLs? Reply with "yes" or "no".`);
 
             // Wait for the user's response
             const filter = response => response.author.id === message.author.id && ['yes', 'no'].includes(response.content.toLowerCase());
             const collected = await message.channel.awaitMessages({ filter, max: 1, time: 30000, errors: ['time'] });
+
+            if (collected.size === 0) {
+                // No response received
+                await confirmationMessage.delete();
+                return;
+            }
 
             const userResponse = collected.first();
             if (userResponse.content.toLowerCase() === 'yes') {
@@ -76,7 +83,7 @@ client.on('messageCreate', async (message) => {
             await userResponse.delete();
         } catch (error) {
             console.error('Error modifying message:', error);
-            await message.channel.send('No response received. Operation canceled.');
+            if (confirmationMessage) await confirmationMessage.delete(); // Delete the confirmation message if no response
         }
     }
 });
