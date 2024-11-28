@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, PermissionsBitField } = require('discord.js');
+const { Client, GatewayIntentBits } = require('discord.js');
 require('dotenv').config();
 
 // Create a new Discord client
@@ -12,18 +12,34 @@ const client = new Client({
 
 const TOKEN = process.env.BOT_TOKEN;
 
-// URL mapping
+// URL mapping with load balancing options
 const urlMappings = {
-    'x.com': 'fixvx.com',
-    'instagram.com': 'instagramez.com',
-    'tiktok.com': 'tiktxk.com'
+    'twitter.com': ['fxtwitter.com', 'fixvx.com'],
+    'x.com': ['fixvx.com'],
+    'instagram.com': ['instagramez.com', 'ddinstagram.com'],
+    'tiktok.com': ['tiktxk.com']
 };
+
+// Function to strip tracking parameters from URLs
+function stripTrackingParams(url) {
+    const urlObj = new URL(url);
+    urlObj.searchParams.forEach((value, key) => {
+        if (key.startsWith('igsh')) {
+            urlObj.searchParams.delete(key);
+        }
+    });
+    return urlObj.toString();
+}
 
 // Function to replace URLs in a message
 function replaceURLs(messageContent) {
-    for (const [original, replacement] of Object.entries(urlMappings)) {
-        const regex = new RegExp(`https?://(www\\.)?${original}`, 'g');
-        messageContent = messageContent.replace(regex, `https://${replacement}`);
+    for (const [original, replacements] of Object.entries(urlMappings)) {
+        const regex = new RegExp(`https?://(www\\.)?${original}[^\\s]*`, 'g');
+        messageContent = messageContent.replace(regex, (url) => {
+            const strippedUrl = stripTrackingParams(url);
+            const replacement = replacements[Math.floor(Math.random() * replacements.length)];
+            return strippedUrl.replace(original, replacement);
+        });
     }
     return messageContent;
 }
