@@ -20,7 +20,7 @@ Evolution future:
 - Supprimer les tags de tracking des liens
 
 Pour inviter le bot sur votre discord voici le lien :
-[Lien vers l'invitation discord](https://discord.com/oauth2/authorize?client_id=1310607261730734180&permissions=274877933568&scope=bot%20applications.commands)
+[Lien vers l'invitation discord](https://discord.com/oauth2/authorize?client_id=1310607261730734180&permissions=274877917248&scope=bot%20applications.commands)
 
 ### 🇬🇧 English  
 Rectilien is a Discord bot created to automatically replace social media URLs for better integration on Discord.  
@@ -34,7 +34,7 @@ Future evolution:
 - Delete tracking tags in link
 
 To invite the bot to your discord click on this link :
-[Link to discord invite](https://discord.com/oauth2/authorize?client_id=1310607261730734180&permissions=274877933568&scope=bot%20applications.commands)
+[Link to discord invite](https://discord.com/oauth2/authorize?client_id=1310607261730734180&permissions=274877917248&scope=bot%20applications.commands)
 
 ---
 
