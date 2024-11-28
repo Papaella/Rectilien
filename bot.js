@@ -5,7 +5,8 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMessageReactions
     ]
 });
 
@@ -61,26 +62,25 @@ client.on('messageCreate', async (message) => {
     if (modifiedContent !== message.content) {
         let confirmationMessage;
         try {
-            confirmationMessage = await message.channel.send(`${message.author}, do you want me to delete and repost your message with modified URLs? Reply with "yes" or "no".`);
+            confirmationMessage = await message.channel.send(`${message.author}, do you want me to delete and repost your message with modified URLs? React with 👍 or 👎.`);
 
-            // Wait for the user's response
-            const filter = response => response.author.id === message.author.id && ['yes', 'no'].includes(response.content.toLowerCase());
-            const collected = await message.channel.awaitMessages({ filter, max: 1, time: 30000, errors: ['time'] });
+            // Add reactions to the confirmation message
+            await confirmationMessage.react('👍');
+            await confirmationMessage.react('👎');
 
-            if (collected.size === 0) {
-                // No response received
-                await confirmationMessage.delete();
-                return;
-            }
+            // Wait for the user's reaction
+            const filter = (reaction, user) => {
+                return ['👍', '👎'].includes(reaction.emoji.name) && user.id === message.author.id;
+            };
+            const collected = await confirmationMessage.awaitReactions({ filter, max: 1, time: 30000, errors: ['time'] });
 
-            const userResponse = collected.first();
-            if (userResponse.content.toLowerCase() === 'yes') {
+            const reaction = collected.first();
+            if (reaction.emoji.name === '👍') {
                 await message.delete(); // Delete the original message
                 await message.channel.send(`${message.author} said: ${modifiedContent}`); // Repost modified content
             }
-            // Delete the confirmation message and the user's response
+            // Delete the confirmation message and the user's reaction
             await confirmationMessage.delete();
-            await userResponse.delete();
         } catch (error) {
             console.error('Error modifying message:', error);
             if (confirmationMessage) await confirmationMessage.delete(); // Delete the confirmation message if no response
