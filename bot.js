@@ -1,7 +1,6 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 require('dotenv').config();
 
-// Create a new Discord client
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -23,9 +22,10 @@ const urlMappings = {
 // Function to strip tracking parameters from URLs
 function stripTrackingParams(url) {
     const urlObj = new URL(url);
-    urlObj.searchParams.forEach((value, key) => {
-        if (key.startsWith('igsh')) {
-            urlObj.searchParams.delete(key);
+    const trackingParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'igsh'];
+    trackingParams.forEach(param => {
+        if (urlObj.searchParams.has(param)) {
+            urlObj.searchParams.delete(param);
         }
     });
     return urlObj.toString();
@@ -57,12 +57,26 @@ client.on('messageCreate', async (message) => {
     // Replace URLs
     const modifiedContent = replaceURLs(message.content);
 
-    // If the message was modified, delete the original and repost
+    // If the message was modified, ask for confirmation before deleting and reposting
     if (modifiedContent !== message.content) {
         try {
-            await message.channel.send(`${message.author} with discord integration: ${modifiedContent}`); // Repost modified content
+            const confirmationMessage = await message.channel.send(`${message.author}, do you want me to delete and repost your message with modified URLs? Reply with "yes" or "no".`);
+
+            // Wait for the user's response
+            const filter = response => response.author.id === message.author.id && ['yes', 'no'].includes(response.content.toLowerCase());
+            const collected = await message.channel.awaitMessages({ filter, max: 1, time: 30000, errors: ['time'] });
+
+            const userResponse = collected.first();
+            if (userResponse.content.toLowerCase() === 'yes') {
+                await message.delete(); // Delete the original message
+                await message.channel.send(`${message.author} said: ${modifiedContent}`); // Repost modified content
+            }
+            // Delete the confirmation message and the user's response
+            await confirmationMessage.delete();
+            await userResponse.delete();
         } catch (error) {
             console.error('Error modifying message:', error);
+            await message.channel.send('No response received. Operation canceled.');
         }
     }
 });
