@@ -13,11 +13,10 @@ Rectilien est un bot Discord conçu pour remplacer automatiquement les URL des r
 
 Fonctionnalités :  
 - Remplace les liens **x.com** par **fixvx.com**.  
-- Remplace les liens **instagram.com** par **instagramez.com**.  
+- Remplace les liens **instagram.com** par **instagramez.com** ou **ddinstagram.com**.  
 - Remplace les liens **tiktok.com** par **tiktxk.com**.
-
-Evolution future:
-- Supprimer les tags de tracking des liens
+- Enlève les trackings igsh & utm_* des liens ci-dessus.
+- Demande l'autorisation de modification par un 👍 ou 👎 en react et supprime les messages en fonctions.
 
 Pour inviter le bot sur votre discord voici le lien :
 [Lien vers l'invitation discord](https://discord.com/oauth2/authorize?client_id=1310607261730734180&permissions=274877917248&scope=bot%20applications.commands)
@@ -27,8 +26,10 @@ Rectilien is a Discord bot created to automatically replace social media URLs fo
 
 Features:  
 - Replaces **x.com** links with **fixvx.com**.  
-- Replaces **instagram.com** links with **instagramez.com**.  
-- Replaces **tiktok.com** links with **tiktxk.com**.  
+- Replaces **instagram.com** links with **instagramez.com** or **ddinstagram.com**.  
+- Replaces **tiktok.com** links with **tiktxk.com**.
+- Remove tracking like igsh & utm_* from the links above.
+- Ask authorisation to replace with a 👍 or 👎 react and delete messages relative to your choices.
 
 Future evolution:
 - Delete tracking tags in link
