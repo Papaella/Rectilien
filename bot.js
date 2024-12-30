@@ -12,14 +12,6 @@ const client = new Client({
 
 const TOKEN = process.env.BOT_TOKEN;
 
-// URL mapping with load balancing options
-const urlMappings = {
-    'twitter.com': ['fxtwitter.com', 'fixvx.com'],
-    'x.com': ['fixvx.com'],
-    'instagram.com': ['instagramez.com', 'ddinstagram.com'],
-    'tiktok.com': ['tiktxk.com']
-};
-
 // Function to strip tracking parameters from URLs
 function stripTrackingParams(url) {
     const urlObj = new URL(url);
@@ -32,19 +24,6 @@ function stripTrackingParams(url) {
     return urlObj.toString();
 }
 
-// Function to replace URLs in a message
-function replaceURLs(messageContent) {
-    for (const [original, replacements] of Object.entries(urlMappings)) {
-        const regex = new RegExp(`https?://(www\\.)?${original}[^\\s]*`, 'g');
-        messageContent = messageContent.replace(regex, (url) => {
-            const strippedUrl = stripTrackingParams(url);
-            const replacement = replacements[Math.floor(Math.random() * replacements.length)];
-            return strippedUrl.replace(original, replacement);
-        });
-    }
-    return messageContent;
-}
-
 // Event: Bot ready
 client.once('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -52,41 +31,69 @@ client.once('ready', () => {
 
 // Event: Message creation
 client.on('messageCreate', async (message) => {
-    // Ignore bot messages
     if (message.author.bot) return;
 
-    // Replace URLs
-    const modifiedContent = replaceURLs(message.content);
+    // Regex to detect all Instagram-related links
+    const instagramRegex = /https?:\/\/(www\.)?(instagram|instagramez|ddinstagram)\.com\/[^\s]+/;
+    const match = message.content.match(instagramRegex);
 
-    // If the message was modified, ask for confirmation before deleting and reposting
-    if (modifiedContent !== message.content) {
-        let confirmationMessage;
-        try {
-            confirmationMessage = await message.channel.send(`${message.author}, do you want me to delete and repost your message with modified URLs? React with 👍 or 👎.`);
+    if (match) {
+        const originalLink = stripTrackingParams(match[0]); // Preserve the original link
+        const confirmationMessage = await message.channel.send(
+            `${message.author}, do you want me to modify your Instagram link? React 👍 or 👎.`
+        );
 
-            // Add reactions to the confirmation message
-            await confirmationMessage.react('👍');
-            await confirmationMessage.react('👎');
+        await confirmationMessage.react('👍');
+        await confirmationMessage.react('👎');
 
-            // Wait for the user's reaction
-            const filter = (reaction, user) => {
-                return ['👍', '👎'].includes(reaction.emoji.name) && user.id === message.author.id;
-            };
-            const collected = await confirmationMessage.awaitReactions({ filter, max: 1, time: 30000, errors: ['time'] });
+        const filter = (reaction, user) =>
+            ['👍', '👎'].includes(reaction.emoji.name) && user.id === message.author.id;
+        const collector = confirmationMessage.createReactionCollector({ filter, max: 1, time: 30000 });
 
-            const reaction = collected.first();
+        collector.on('collect', async (reaction) => {
             if (reaction.emoji.name === '👍') {
                 await message.delete(); // Delete the original message
-                await message.channel.send(`${message.author} said: ${modifiedContent}`); // Repost modified content
+                const repostMessage = await message.channel.send(`${message.author} said: ${originalLink}`);
+                await repostMessage.react('🇩'); // ddinstagram
+                await repostMessage.react('🇪'); // instagramez
+                await repostMessage.react('📷'); // instagram
+                await repostMessage.react('❌'); // delete
+
+                const repostFilter = (reaction, user) =>
+                    ['🇩', '🇪', '📷', '❌'].includes(reaction.emoji.name) && user.id === message.author.id;
+                const repostCollector = repostMessage.createReactionCollector({ filter: repostFilter, time: 60000 });
+
+                repostCollector.on('collect', async (reaction) => {
+                    if (reaction.emoji.name === '🇩') {
+                        const newLink = originalLink.replace(/(instagram|instagramez|ddinstagram)\.com/, 'ddinstagram.com');
+                        await repostMessage.edit(`${message.author} updated link: ${newLink}`);
+                    } else if (reaction.emoji.name === '🇪') {
+                        const newLink = originalLink.replace(/(instagram|instagramez|ddinstagram)\.com/, 'instagramez.com');
+                        await repostMessage.edit(`${message.author} updated link: ${newLink}`);
+                    } else if (reaction.emoji.name === '📷') {
+                        const newLink = originalLink.replace(/(instagram|instagramez|ddinstagram)\.com/, 'instagram.com');
+                        await repostMessage.edit(`${message.author} updated link: ${newLink}`);
+                    } else if (reaction.emoji.name === '❌') {
+                        await repostMessage.delete();
+                        repostCollector.stop();
+                    }
+                });
+
+                repostCollector.on('end', () => {
+                    repostMessage.reactions.removeAll().catch(console.error);
+                });
+            } else if (reaction.emoji.name === '👎') {
+                await confirmationMessage.delete();
+                collector.stop();
             }
-            // Delete the confirmation message and the user's reaction
-            await confirmationMessage.delete();
-        } catch (error) {
-            console.error('Error modifying message:', error);
-            if (confirmationMessage) await confirmationMessage.delete(); // Delete the confirmation message if no response
-        }
+        });
+
+        collector.on('end', () => {
+            if (!confirmationMessage.deleted) {
+                confirmationMessage.delete().catch(console.error);
+            }
+        });
     }
 });
 
-// Login to Discord
 client.login(TOKEN);
