@@ -32,19 +32,19 @@ function modifyURL(originalURL, replacement) {
     );
 }
 
-// Function to get reactions based on URL type
+// Function to get reactions and replacements based on URL type
 function getReactions(url) {
     if (url.includes('instagram.com') || url.includes('instagramez.com') || url.includes('ddinstagram.com')) {
-        return { D: 'ddinstagram.com', E: 'instagramez.com', camera: 'instagram.com' };
+        return { playPause: 'instagramez.com', arrowsCounterclockwise: 'ddinstagram.com', link: 'instagram.com' };
     }
     if (url.includes('twitter.com')) {
-        return { playPause: 'vxtwitter.com', thread: 'xcancel.com', bird: 'x.com' };
+        return { playPause: 'vxtwitter.com', thread: 'xcancel.com', link: 'x.com' };
     }
     if (url.includes('x.com')) {
-        return { playPause: 'fixvx.com', thread: 'xcancel.com', bird: 'x.com' };
+        return { playPause: 'fixvx.com', thread: 'xcancel.com', link: 'x.com' };
     }
     if (url.includes('tiktok.com')) {
-        return { playPause: 'vm.vxtiktok.com', camera: 'tiktok.com' };
+        return { playPause: 'vm.vxtiktok.com', link: 'tiktok.com' };
     }
     return null;
 }
@@ -83,37 +83,29 @@ client.on('messageCreate', async (message) => {
             if (reaction.emoji.name === '👍') {
                 await message.delete(); // Delete the original message
                 const repostMessage = await message.channel.send(`${message.author} said: ${originalLink}`);
-                if (linkType.D) await repostMessage.react('🇩'); // ddinstagram
-                if (linkType.E) await repostMessage.react('🇪'); // instagramez
-                if (linkType.camera) await repostMessage.react('📷'); // instagram or tiktok camera
-                if (linkType.playPause) await repostMessage.react('🎵'); // vxtwitter or vm.vxtiktok
+                if (linkType.playPause) await repostMessage.react('⏯'); // Default replacement
+                if (linkType.arrowsCounterclockwise) await repostMessage.react('🔄'); // ddinstagram (Instagram only)
                 if (linkType.thread) await repostMessage.react('🧵'); // xcancel
-                if (linkType.bird) await repostMessage.react('🐦'); // twitter/x.com
-                await repostMessage.react('❌'); // delete
+                if (linkType.link) await repostMessage.react('🔗'); // Original link
+                await repostMessage.react('❌'); // Delete
 
                 const repostFilter = (reaction, user) =>
-                    ['🇩', '🇪', '📷', '🎵', '🧵', '🐦', '❌'].includes(reaction.emoji.name) &&
+                    ['⏯', '🔄', '🧵', '🔗', '❌'].includes(reaction.emoji.name) &&
                     user.id === message.author.id;
                 const repostCollector = repostMessage.createReactionCollector({ filter: repostFilter, time: 60000 });
 
                 repostCollector.on('collect', async (reaction) => {
-                    if (reaction.emoji.name === '🇩') {
-                        const newLink = modifyURL(originalLink, linkType.D);
-                        await repostMessage.edit(`${message.author} updated link: ${newLink}`);
-                    } else if (reaction.emoji.name === '🇪') {
-                        const newLink = modifyURL(originalLink, linkType.E);
-                        await repostMessage.edit(`${message.author} updated link: ${newLink}`);
-                    } else if (reaction.emoji.name === '📷') {
-                        const newLink = modifyURL(originalLink, linkType.camera);
-                        await repostMessage.edit(`${message.author} updated link: ${newLink}`);
-                    } else if (reaction.emoji.name === '🎵') {
+                    if (reaction.emoji.name === '⏯') {
                         const newLink = modifyURL(originalLink, linkType.playPause);
+                        await repostMessage.edit(`${message.author} updated link: ${newLink}`);
+                    } else if (reaction.emoji.name === '🔄') {
+                        const newLink = modifyURL(originalLink, linkType.arrowsCounterclockwise);
                         await repostMessage.edit(`${message.author} updated link: ${newLink}`);
                     } else if (reaction.emoji.name === '🧵') {
                         const newLink = modifyURL(originalLink, linkType.thread);
                         await repostMessage.edit(`${message.author} updated link: ${newLink}`);
-                    } else if (reaction.emoji.name === '🐦') {
-                        const newLink = modifyURL(originalLink, linkType.bird);
+                    } else if (reaction.emoji.name === '🔗') {
+                        const newLink = modifyURL(originalLink, linkType.link);
                         await repostMessage.edit(`${message.author} updated link: ${newLink}`);
                     } else if (reaction.emoji.name === '❌') {
                         await repostMessage.delete();
