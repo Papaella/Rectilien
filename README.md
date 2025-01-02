@@ -18,6 +18,13 @@ Fonctionnalités :
 - Enlève les trackings igsh & utm_* des liens ci-dessus.
 - Demande l'autorisation de modification par un 👍 ou 👎 en react et supprime les messages en fonctions.
 
+Une fois validé par le 👍:
+⏯️ : integration video peux importe la plateforme
+🧵 : pour les thread x
+🔄 : pour ddinstagram si instagramez hors services
+🔗 : pour le lien originel
+❌ : supprimer
+
 Pour inviter le bot sur votre discord voici le lien :
 [Lien vers l'invitation discord](https://discord.com/oauth2/authorize?client_id=1310607261730734180&permissions=274877917248&scope=bot%20applications.commands)
 
@@ -31,8 +38,13 @@ Features:
 - Remove tracking like igsh & utm_* from the links above.
 - Ask authorisation to replace with a 👍 or 👎 react and delete messages relative to your choices.
 
-Future evolution:
-- Delete tracking tags in link
+Once authorized by the 👍:
+⏯️ : integrate the video
+🧵 : for x threads
+🔄 : for ddinstagram if instagramez is broken
+🔗 : for original link
+❌ : to delete
+
 
 To invite the bot to your discord click on this link :
 [Link to discord invite](https://discord.com/oauth2/authorize?client_id=1310607261730734180&permissions=274877917248&scope=bot%20applications.commands)
